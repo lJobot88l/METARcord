@@ -10,7 +10,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using Newtonsoft.Json;
 using Classes;
 
-namespace Sylt51bot
+namespace METARcord
 {
     class Program
     {
@@ -63,6 +63,8 @@ namespace Sylt51bot
                 discord = new DiscordClient(dCfg);
                 commands = discord.UseCommandsNext(cNcfg);
 
+                commands.RegisterCommands<Commands>();
+
                 commands.CommandErrored += CmdErrorHandler;
 
 
@@ -82,6 +84,7 @@ namespace Sylt51bot
             try
 			{
 				var failedChecks = ((DSharpPlus.CommandsNext.Exceptions.ChecksFailedException)e.Exception).FailedChecks;
+                // Code {...}
 			}
 			catch (Exception ex)
 			{
@@ -129,21 +132,6 @@ namespace Sylt51bot
 						catch { }
 					}
 					LastHb = msghb.Id;
-					foreach (RegisteredServer e in servers)
-					{
-						try
-						{
-							foreach (KeyValuePair<ulong, DateTime> kvp in e.timedoutedusers)
-							{
-								if (DateTime.Now - kvp.Value >= e.CoolDown)
-								{
-									servers.Find(x => x.Id == e.Id).timedoutedusers.Remove(kvp.Key);
-								}
-							}
-						}
-						catch { }
-					}
-                    File.WriteAllText("config/RegServers.json", Newtonsoft.Json.JsonConvert.SerializeObject(servers, Formatting.Indented));
 				}
 				catch (Exception ex)
 				{
@@ -266,6 +254,7 @@ namespace Classes
 		public string Token { get; set; }
 		public ulong ErrorHbChannel { get; set; }
 		public List<string> Prefixes { get; set; }
+        public string Invite = "";
 		public string Version = "1.0.0";
 	}
 
@@ -300,4 +289,75 @@ namespace Classes
 		}
 
 	}
+
+	[System.Runtime.Serialization.DataContract]
+    public class FullXml
+    {
+        [System.Runtime.Serialization.DataMember(Name = "?xml")]
+        public Header xml;
+        [System.Runtime.Serialization.DataMember(Name = "response")]
+        public METARResponse response;
+    }
+
+	[System.Runtime.Serialization.DataContract]
+    public class Header
+    {
+        [System.Runtime.Serialization.DataMember(Name = "@version")]
+        public string version;
+        [System.Runtime.Serialization.DataMember(Name = "@encoding")]
+
+        public string encoding;
+    }
+
+	[System.Runtime.Serialization.DataContract]
+    public class METARResponse
+    {
+        [System.Runtime.Serialization.DataMember(Name = "@xmlns:xsd")]
+        public string xmlns_xsd;
+        [System.Runtime.Serialization.DataMember(Name = "@xmlns:xsi")]
+        public string xmlns_xsi;
+        [System.Runtime.Serialization.DataMember(Name = "@version")]
+        public string version;
+        [System.Runtime.Serialization.DataMember(Name = "@xsi:noNamespaceSchemaLocation")]
+        public string xsi_noNamespaceSchemaLocation;
+        [System.Runtime.Serialization.DataMember(Name = "request_index")]
+        public string request_index;
+        [System.Runtime.Serialization.DataMember(Name = "data_source")]
+        public DataSource data_source;
+        [System.Runtime.Serialization.DataMember(Name = "request")]
+        public Request request;
+        [System.Runtime.Serialization.DataMember(Name = "errors")]
+        public string errors;
+        [System.Runtime.Serialization.DataMember(Name = "warnings")]
+        public string warnings;
+        [System.Runtime.Serialization.DataMember(Name = "time_taken_ms")]
+        public string time_taken_ms;
+        [System.Runtime.Serialization.DataMember(Name = "data")]
+        public Data data;
+    	[System.Runtime.Serialization.DataContract]
+        public class DataSource
+        {
+            [System.Runtime.Serialization.DataMember(Name = "@name")]
+            public string name;
+        }
+    	[System.Runtime.Serialization.DataContract]
+        public class Request
+        {
+            [System.Runtime.Serialization.DataMember(Name = "@type")]
+            public string type;
+        }
+    	[System.Runtime.Serialization.DataContract]
+        public class Data
+        {
+            [System.Runtime.Serialization.DataMember(Name = "@num_results")]
+            public string num_results;
+            [System.Runtime.Serialization.DataMember(Name = "METAR")]
+            public Metar METAR;
+        }
+        public class Metar
+        {
+            [System.Runtime.Serialization.DataMember(Name = "raw_text")]
+            public string raw_text;
+        }
+    }
 }
